@@ -9,6 +9,7 @@ export default function MessageCard({ message, onUpdate, onRetranslate, isRetran
   const [isEditing, setIsEditing] = useState(false);
   const [editedTranslation, setEditedTranslation] = useState(message.translation);
   const [copyStatus, setCopyStatus] = useState('idle'); // idle | copying | copied
+  const [showLiteral, setShowLiteral] = useState(false);
 
   // Determinar color del borde según tipo
   const getBorderColor = () => {
@@ -62,7 +63,7 @@ export default function MessageCard({ message, onUpdate, onRetranslate, isRetran
   };
 
   return (
-    <div className={`${copyStatus === 'copied' ? 'bg-green-200 !border-green-600 !border-4 shadow-green-500/50' : `bg-white/80 ${getBorderColor()}`} backdrop-blur-sm neon-border shadow-neon rounded-2xl p-4 transition-all duration-300 hover:shadow-neon`}>
+    <div className={`${copyStatus === 'copied' ? 'bg-green-200 !border-green-600 !border-4 shadow-green-500/50' : `bg-white/80 ${getBorderColor()}`} backdrop-blur-sm neon-border shadow-neon rounded-2xl p-3 transition-all duration-300 hover:shadow-neon`}>
       {/* Badge de tipo */}
       <div className="mb-3">
         <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold badge-gradient`} aria-label={`Tipo de mensaje: ${getBadgeLabel()}`}>
@@ -71,7 +72,7 @@ export default function MessageCard({ message, onUpdate, onRetranslate, isRetran
       </div>
 
       {/* Texto original en chino */}
-      <div className="mb-4">
+      <div className="mb-2">
         <label className="block text-xs font-semibold text-gray-700 mb-2">
           🇨🇳 ORIGINAL
         </label>
@@ -83,19 +84,25 @@ export default function MessageCard({ message, onUpdate, onRetranslate, isRetran
       </div>
 
       {/* Traducción literal */}
-      <div className="mb-4">
-        <label className="block text-xs font-semibold text-gray-700 mb-2">
+      <div className="mb-2">
+        <button
+          onClick={() => setShowLiteral(!showLiteral)}
+          className="flex items-center gap-2 text-xs font-semibold text-gray-700 mb-2 hover:text-gray-900 transition-colors"
+        >
+          <span>{showLiteral ? '▼' : '▶'}</span>
           📖 TRADUCCIÓN LITERAL
-        </label>
-        <div className="bg-orange-50 backdrop-blur-sm p-3 rounded-xl border border-orange-200">
-          <p className="text-[15px] leading-7 text-gray-800 whitespace-pre-wrap">
-            {message.literalTranslation || '[Cargando...]'}
-          </p>
-        </div>
+        </button>
+        {showLiteral && (
+          <div className="bg-orange-50 backdrop-blur-sm p-3 rounded-xl border border-orange-200">
+            <p className="text-[15px] leading-7 text-gray-800 whitespace-pre-wrap">
+              {message.literalTranslation || '[Cargando...]'}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Traducción final */}
-      <div className="mb-4">
+      <div className="mb-2">
         <label className="block text-xs font-semibold text-gray-700 mb-2">
           🇦🇷 TRADUCCIÓN FINAL
         </label>

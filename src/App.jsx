@@ -173,7 +173,7 @@ function App() {
               Resultados ({messages.length} mensajes)
             </h2>
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
               {messages.map(message => (
                 <MessageCard
                   key={message.id}
