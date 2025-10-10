@@ -1,6 +1,6 @@
-# Traductor Chino-Español Argentino
+# ElizabethAI
 
-Aplicación web para traducir mensajes de Telegram del chino al español argentino usando Claude AI.
+Traductor de mensajes de Telegram del chino al español argentino usando Claude AI.
 
 ## 🚀 Características
 

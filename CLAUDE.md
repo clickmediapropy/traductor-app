@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Traductor Chino-Español Argentino: Una aplicación web para traducir mensajes de Telegram del chino al español argentino usando Claude AI. La aplicación detecta automáticamente el tipo de mensaje y aplica reglas de traducción diferenciadas según el remitente.
+**ElizabethAI**: Traductor de mensajes de Telegram del chino al español argentino usando Claude AI. La aplicación detecta automáticamente el tipo de mensaje y aplica reglas de traducción diferenciadas según el remitente.
 
 ## Commands
 

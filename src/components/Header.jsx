@@ -6,7 +6,7 @@ export default function Header({ onOpenSettings, onOpenInstructions, hasApiKey, 
     <div className="px-4 sm:px-6 lg:px-8 py-3">
       <div className="mx-auto max-w-3xl flex items-center justify-between">
         <h1 className="text-lg sm:text-xl font-semibold font-display bg-gradient-to-r from-cyan-400 to-violet-500 bg-clip-text text-transparent">
-          Traductor Chino-Español Argentino
+          ElizabethAI
         </h1>
 
         <div className="flex items-center gap-2">
