@@ -26,7 +26,7 @@ export async function translateMessage(type, gender, originalText) {
 
   try {
     const message = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-5-20250929',
       max_tokens: 2000,
       messages: [{
         role: 'user',
@@ -69,7 +69,7 @@ export async function translateLiteral(originalText) {
 
   try {
     const message = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-5-20250929',
       max_tokens: 2000,
       messages: [{
         role: 'user',
