@@ -90,7 +90,7 @@ export function parseMessages(inputText) {
 
 /**
  * Pre-procesa el texto de Telegram para eliminar metadatos
- * Elimina líneas como: "blues 周伯通工作室, [2025-10-10 11:20 AM]"
+ * Elimina líneas como: "blues 周伯通工作室, [10 de oct de 2025 a las 15:02]"
  *
  * @param {string} text - Texto crudo de Telegram
  * @returns {string} Texto limpio sin metadata
@@ -101,8 +101,8 @@ function preprocessTelegramText(text) {
 
   for (const line of lines) {
     // Detectar líneas de metadata de Telegram
-    // Patrón: "nombre/canal, [fecha hora AM/PM]"
-    const isMetadata = /^[^,]+,\s*\[[\d\-\/\s:APMapm]+\]\s*$/.test(line.trim());
+    // Patrón: "nombre/canal, [cualquier formato de fecha]"
+    const isMetadata = /^[^,]+,\s*\[[^\]]+\]\s*$/.test(line.trim());
 
     if (!isMetadata) {
       cleanedLines.push(line);
