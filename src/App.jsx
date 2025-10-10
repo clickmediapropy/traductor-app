@@ -6,7 +6,7 @@ import InputArea from './components/InputArea';
 import MessageCard from './components/MessageCard';
 import LoadingSpinner from './components/LoadingSpinner';
 import { parseMessages, cleanOriginalText } from './services/messageParser';
-import { translateBatch } from './services/claudeAPI';
+import { translateBatch, translateMessage, translateLiteral } from './services/claudeAPI';
 import { getCustomInstructions } from './services/translationPrompt';
 
 function App() {
@@ -18,6 +18,7 @@ function App() {
   const [hasApiKey, setHasApiKey] = useState(false);
   const [customInstructionsCount, setCustomInstructionsCount] = useState(0);
   const [error, setError] = useState(null);
+  const [retranslatingMessageId, setRetranslatingMessageId] = useState(null);
 
   // Verificar API key al cargar
   useEffect(() => {
@@ -94,6 +95,41 @@ function App() {
     );
   };
 
+  // Re-traducir un mensaje específico
+  const handleRetranslate = async (id) => {
+    if (!hasApiKey || retranslatingMessageId) return;
+
+    setRetranslatingMessageId(id);
+
+    try {
+      // Encontrar el mensaje
+      const messageToRetranslate = messages.find(msg => msg.id === id);
+      if (!messageToRetranslate) return;
+
+      // Re-traducir con las mismas funciones que translateBatch
+      const literalTranslation = await translateLiteral(messageToRetranslate.original);
+      const finalTranslation = await translateMessage(
+        messageToRetranslate.type,
+        messageToRetranslate.gender,
+        messageToRetranslate.original
+      );
+
+      // Actualizar el mensaje con las nuevas traducciones
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.id === id
+            ? { ...msg, literalTranslation, translation: finalTranslation }
+            : msg
+        )
+      );
+    } catch (err) {
+      console.error('Error al re-traducir:', err);
+      alert(`Error al re-traducir: ${err.message}`);
+    } finally {
+      setRetranslatingMessageId(null);
+    }
+  };
+
   // Guardar API key
   const handleSaveApiKey = (apiKey) => {
     localStorage.setItem('claudeApiKey', apiKey);
@@ -143,6 +179,8 @@ function App() {
                   key={message.id}
                   message={message}
                   onUpdate={handleUpdateMessage}
+                  onRetranslate={handleRetranslate}
+                  isRetranslating={retranslatingMessageId === message.id}
                 />
               ))}
             </div>

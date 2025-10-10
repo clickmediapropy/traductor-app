@@ -5,7 +5,7 @@ import { copyToClipboard } from '../utils/clipboard';
  * Card individual para cada mensaje traducido
  * Incluye funcionalidad de edición inline y copia al portapapeles
  */
-export default function MessageCard({ message, onUpdate }) {
+export default function MessageCard({ message, onUpdate, onRetranslate, isRetranslating }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTranslation, setEditedTranslation] = useState(message.translation);
   const [copyStatus, setCopyStatus] = useState('idle'); // idle | copying | copied
@@ -139,16 +139,24 @@ export default function MessageCard({ message, onUpdate }) {
           <>
             <button
               onClick={() => setIsEditing(true)}
-              className="flex-1 px-3 py-2 btn-gradient text-white text-sm font-medium rounded-xl transition-colors transition-transform duration-200 active:scale-95 focus-ring"
+              disabled={isRetranslating}
+              className="flex-1 px-3 py-2 btn-gradient text-white text-sm font-medium rounded-xl transition-colors transition-transform duration-200 active:scale-95 disabled:opacity-50 focus-ring"
             >
               ✏️ Editar
             </button>
             <button
               onClick={handleCopy}
-              disabled={copyStatus === 'copying'}
+              disabled={copyStatus === 'copying' || isRetranslating}
               className="flex-1 px-3 py-2 bg-gray-700 hover:bg-gray-800 text-white text-sm font-medium rounded-xl transition-colors transition-transform duration-200 active:scale-95 disabled:opacity-50 focus-ring"
             >
               {copyStatus === 'copied' ? '✓ Copiado!' : '📋 Copiar'}
+            </button>
+            <button
+              onClick={() => onRetranslate(message.id)}
+              disabled={isRetranslating}
+              className="flex-1 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-xl transition-colors transition-transform duration-200 active:scale-95 disabled:opacity-50 focus-ring"
+            >
+              {isRetranslating ? '⏳ Re-traduciendo...' : '🔄 Re-traducir'}
             </button>
           </>
         )}
