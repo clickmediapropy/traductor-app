@@ -1,7 +1,11 @@
 /**
  * Área de input para pegar mensajes de Telegram
  */
+import { useRef } from 'react';
+
 export default function InputArea({ inputText, setInputText, onTranslate, onClear, isLoading, hasApiKey }) {
+  const isPasting = useRef(false);
+
   const handleTranslateClick = () => {
     if (!hasApiKey || !inputText.trim() || isLoading) return;
     onTranslate();
@@ -10,9 +14,9 @@ export default function InputArea({ inputText, setInputText, onTranslate, onClea
   // Fix para pegado de textos largos en móvil
   const handlePaste = (e) => {
     e.preventDefault();
-    const pastedText = e.clipboardData.getData('text');
+    isPasting.current = true;
 
-    // Actualizar el state directamente con todo el texto pegado
+    const pastedText = e.clipboardData.getData('text');
     const textarea = e.target;
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
@@ -20,13 +24,22 @@ export default function InputArea({ inputText, setInputText, onTranslate, onClea
 
     // Insertar el texto pegado en la posición del cursor
     const newValue = currentValue.substring(0, start) + pastedText + currentValue.substring(end);
+
+    // Update state
     setInputText(newValue);
 
-    // Posicionar el cursor después del texto pegado (en el próximo tick)
+    // Limpiar flag y posicionar cursor
     setTimeout(() => {
+      isPasting.current = false;
       const newCursorPos = start + pastedText.length;
       textarea.setSelectionRange(newCursorPos, newCursorPos);
-    }, 0);
+    }, 100);
+  };
+
+  // onChange modificado para skipear durante paste
+  const handleChange = (e) => {
+    if (isPasting.current) return; // Ignorar cambios durante paste
+    setInputText(e.target.value);
   };
 
   return (
@@ -37,7 +50,7 @@ export default function InputArea({ inputText, setInputText, onTranslate, onClea
 
       <textarea
         value={inputText}
-        onChange={(e) => setInputText(e.target.value)}
+        onChange={handleChange}
         onPaste={handlePaste}
         placeholder={`Pegá todos los mensajes de Telegram aquí...
 
