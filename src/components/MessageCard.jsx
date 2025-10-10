@@ -49,7 +49,7 @@ export default function MessageCard({ message, onUpdate }) {
   const handleCopy = async () => {
     setCopyStatus('copying');
 
-    // Copiar ORIGINAL + TRADUCCIÓN
+    // Copiar ORIGINAL + TRADUCCIÓN FINAL (sin literal)
     const textToCopy = `${message.original}\n\n${message.translation}`;
     const success = await copyToClipboard(textToCopy);
 
@@ -83,10 +83,22 @@ export default function MessageCard({ message, onUpdate }) {
         </div>
       </div>
 
-      {/* Traducción */}
+      {/* Traducción literal */}
       <div className="mb-4">
         <label className="block text-xs font-semibold text-gray-700 mb-2">
-          🇦🇷 TRADUCCIÓN
+          📖 TRADUCCIÓN LITERAL
+        </label>
+        <div className="bg-blue-50/70 backdrop-blur-sm p-3 rounded-xl border border-blue-200">
+          <p className="text-[15px] leading-7 text-gray-800 whitespace-pre-wrap">
+            {message.literalTranslation || '[Cargando...]'}
+          </p>
+        </div>
+      </div>
+
+      {/* Traducción final */}
+      <div className="mb-4">
+        <label className="block text-xs font-semibold text-gray-700 mb-2">
+          🇦🇷 TRADUCCIÓN FINAL
         </label>
         {isEditing ? (
           <textarea

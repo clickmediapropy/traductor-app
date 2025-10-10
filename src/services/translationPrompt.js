@@ -10,6 +10,44 @@
 const CUSTOM_INSTRUCTIONS_KEY = 'customTranslationInstructions';
 
 /**
+ * Construye el prompt para traducción literal (sin estilos)
+ * Esta traducción es solo para referencia y control de calidad
+ *
+ * @param {string} originalText - Texto chino a traducir
+ * @returns {string} Prompt para traducción literal
+ */
+export function buildLiteralTranslationPrompt(originalText) {
+  if (!originalText || originalText.trim() === '') {
+    throw new Error('El texto original no puede estar vacío');
+  }
+
+  return `Eres un traductor profesional chino-español.
+
+## TAREA
+Traduce el siguiente texto del chino al español de forma LITERAL y DIRECTA.
+
+## REGLAS ESTRICTAS
+1. Traducción lo más fiel posible al significado original
+2. NO aplicar estilos regionales (argentinismos, modismos locales)
+3. NO agregar interpretaciones personales
+4. NO aplicar reglas de puntuación especiales
+5. Mantener la estructura original del mensaje
+6. Ser neutral y directo
+7. Usar español estándar internacional
+8. Traducir el significado básico sin adornos
+
+## FORMATO DE RESPUESTA
+- Responde SOLO con la traducción literal
+- NO incluyas explicaciones
+- NO uses etiquetas como "Traducción:" o similar
+- SOLO el texto traducido, nada más
+
+## TEXTO A TRADUCIR
+
+${originalText}`;
+}
+
+/**
  * Obtiene las instrucciones personalizadas desde localStorage
  * @returns {Array<string>} Array de instrucciones personalizadas
  */
