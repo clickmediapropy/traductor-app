@@ -1,23 +1,10 @@
 /**
- * Área de input para pegar mensajes de Telegram (uncontrolled para soportar textos muy grandes)
+ * Área de input para pegar mensajes de Telegram
  */
-import { useRef, useState } from 'react';
-
-export default function InputArea({ onTranslate, onClear, isLoading, hasApiKey }) {
-  const textareaRef = useRef(null);
-  const [hasContent, setHasContent] = useState(false);
-
+export default function InputArea({ inputText, setInputText, onTranslate, onClear, isLoading, hasApiKey }) {
   const handleTranslateClick = () => {
-    if (!hasApiKey || isLoading) return;
-    const value = textareaRef.current ? textareaRef.current.value : '';
-    const trimmed = value.trim();
-    if (!trimmed) return;
-    onTranslate(trimmed);
-  };
-
-  const handleInput = () => {
-    if (!textareaRef.current) return;
-    setHasContent(Boolean(textareaRef.current.value && textareaRef.current.value.length > 0));
+    if (!hasApiKey || !inputText.trim() || isLoading) return;
+    onTranslate();
   };
 
   return (
@@ -27,8 +14,8 @@ export default function InputArea({ onTranslate, onClear, isLoading, hasApiKey }
       </h2>
 
       <textarea
-        ref={textareaRef}
-        onInput={handleInput}
+        value={inputText}
+        onChange={(e) => setInputText(e.target.value)}
         placeholder={`Pegá todos los mensajes de Telegram aquí...
 
 Ejemplo:
@@ -42,7 +29,7 @@ Ejemplo:
       <div className="flex flex-col sm:flex-row gap-3 mt-3 sm:mt-4">
         <button
           onClick={handleTranslateClick}
-          disabled={!hasApiKey || !hasContent || isLoading}
+          disabled={!hasApiKey || !inputText.trim() || isLoading}
           className="flex items-center gap-2 btn-gradient text-white font-semibold py-2 px-6 rounded-xl shadow-sm transition-colors transition-transform duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed focus-ring"
         >
           <span>{isLoading ? '⏳' : '🚀'}</span>
@@ -50,13 +37,7 @@ Ejemplo:
         </button>
 
         <button
-          onClick={() => {
-            if (textareaRef.current) {
-              textareaRef.current.value = '';
-            }
-            setHasContent(false);
-            onClear();
-          }}
+          onClick={onClear}
           disabled={isLoading}
           className="flex items-center justify-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold py-2 px-6 rounded-xl transition-colors transition-transform duration-200 active:scale-95 focus-ring"
         >
