@@ -1,45 +1,23 @@
 /**
- * Área de input para pegar mensajes de Telegram
+ * Área de input para pegar mensajes de Telegram (uncontrolled para soportar paste en móvil)
  */
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 
-export default function InputArea({ inputText, setInputText, onTranslate, onClear, isLoading, hasApiKey }) {
-  const isPasting = useRef(false);
+export default function InputArea({ onTranslate, onClear, isLoading, hasApiKey }) {
+  const textareaRef = useRef(null);
+  const [hasContent, setHasContent] = useState(false);
 
   const handleTranslateClick = () => {
-    if (!hasApiKey || !inputText.trim() || isLoading) return;
-    onTranslate();
+    if (!hasApiKey || isLoading) return;
+    const value = textareaRef.current ? textareaRef.current.value : '';
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    onTranslate(trimmed);
   };
 
-  // Fix para pegado de textos largos en móvil
-  const handlePaste = (e) => {
-    e.preventDefault();
-    isPasting.current = true;
-
-    const pastedText = e.clipboardData.getData('text');
-    const textarea = e.target;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const currentValue = inputText || '';
-
-    // Insertar el texto pegado en la posición del cursor
-    const newValue = currentValue.substring(0, start) + pastedText + currentValue.substring(end);
-
-    // Update state
-    setInputText(newValue);
-
-    // Limpiar flag y posicionar cursor
-    setTimeout(() => {
-      isPasting.current = false;
-      const newCursorPos = start + pastedText.length;
-      textarea.setSelectionRange(newCursorPos, newCursorPos);
-    }, 100);
-  };
-
-  // onChange modificado para skipear durante paste
-  const handleChange = (e) => {
-    if (isPasting.current) return; // Ignorar cambios durante paste
-    setInputText(e.target.value);
+  const handleInput = () => {
+    if (!textareaRef.current) return;
+    setHasContent(Boolean(textareaRef.current.value && textareaRef.current.value.length > 0));
   };
 
   return (
@@ -49,9 +27,8 @@ export default function InputArea({ inputText, setInputText, onTranslate, onClea
       </h2>
 
       <textarea
-        value={inputText}
-        onChange={handleChange}
-        onPaste={handlePaste}
+        ref={textareaRef}
+        onInput={handleInput}
         placeholder={`Pegá todos los mensajes de Telegram aquí...
 
 Ejemplo:
@@ -65,7 +42,7 @@ Ejemplo:
       <div className="flex flex-col sm:flex-row gap-3 mt-3 sm:mt-4">
         <button
           onClick={handleTranslateClick}
-          disabled={!hasApiKey || !inputText.trim() || isLoading}
+          disabled={!hasApiKey || !hasContent || isLoading}
           className="flex items-center gap-2 btn-gradient text-white font-semibold py-2 px-6 rounded-xl shadow-sm transition-colors transition-transform duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed focus-ring"
         >
           <span>{isLoading ? '⏳' : '🚀'}</span>
@@ -73,7 +50,13 @@ Ejemplo:
         </button>
 
         <button
-          onClick={onClear}
+          onClick={() => {
+            if (textareaRef.current) {
+              textareaRef.current.value = '';
+            }
+            setHasContent(false);
+            onClear();
+          }}
           disabled={isLoading}
           className="flex items-center justify-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold py-2 px-6 rounded-xl transition-colors transition-transform duration-200 active:scale-95 focus-ring"
         >

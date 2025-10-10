@@ -11,7 +11,6 @@ import { getCustomInstructions } from './services/translationPrompt';
 
 function App() {
   // Estado
-  const [inputText, setInputText] = useState('');
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showApiModal, setShowApiModal] = useState(false);
@@ -43,15 +42,15 @@ function App() {
   };
 
   // Manejar traducción
-  const handleTranslate = async () => {
-    if (!inputText || !inputText.trim() || !hasApiKey) return;
+  const handleTranslate = async (textToTranslate) => {
+    if (!textToTranslate || !textToTranslate.trim() || !hasApiKey) return;
 
     setIsLoading(true);
     setError(null);
 
     try {
       // 1. Parsear mensajes
-      const parsedMessages = parseMessages(inputText);
+      const parsedMessages = parseMessages(textToTranslate);
 
       if (parsedMessages.length === 0) {
         setError('No se detectaron mensajes válidos');
@@ -81,7 +80,6 @@ function App() {
 
   // Limpiar todo
   const handleClear = () => {
-    setInputText('');
     setMessages([]);
     setError(null);
   };
@@ -117,8 +115,6 @@ function App() {
         {/* Input Area */}
         <section className="animate-fade-in">
           <InputArea
-            inputText={inputText}
-            setInputText={setInputText}
             onTranslate={handleTranslate}
             onClear={handleClear}
             isLoading={isLoading}
