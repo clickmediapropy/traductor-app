@@ -62,7 +62,7 @@ export default function MessageCard({ message, onUpdate, onRetranslate, isRetran
   };
 
   return (
-    <div className={`${copyStatus === 'copied' ? 'bg-green-100 !border-green-500' : `bg-white/80 ${getBorderColor()}`} backdrop-blur-sm neon-border shadow-neon rounded-2xl p-4 transition-all duration-300 hover:shadow-neon`}>
+    <div className={`${copyStatus === 'copied' ? 'bg-green-200 !border-green-600 !border-4 shadow-green-500/50' : `bg-white/80 ${getBorderColor()}`} backdrop-blur-sm neon-border shadow-neon rounded-2xl p-4 transition-all duration-300 hover:shadow-neon`}>
       {/* Badge de tipo */}
       <div className="mb-3">
         <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold badge-gradient`} aria-label={`Tipo de mensaje: ${getBadgeLabel()}`}>
