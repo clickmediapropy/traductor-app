@@ -50,7 +50,7 @@ export default function MessageCard({ message, onUpdate }) {
     setCopyStatus('copying');
 
     // Copiar ORIGINAL + TRADUCCIÓN FINAL (sin literal)
-    const textToCopy = `${message.original}\n\n${message.translation}`;
+    const textToCopy = `${message.originalWithFormat}\n\n${message.translation}`;
     const success = await copyToClipboard(textToCopy);
 
     if (success) {
@@ -78,7 +78,7 @@ export default function MessageCard({ message, onUpdate }) {
         </label>
         <div className="bg-gray-50 p-3 rounded-xl border border-gray-200">
           <p className="font-chinese text-[15px] leading-7 text-gray-800 whitespace-pre-wrap">
-            {message.original}
+            {message.originalWithFormat}
           </p>
         </div>
       </div>

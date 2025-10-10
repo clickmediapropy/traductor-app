@@ -61,7 +61,8 @@ function App() {
       // 2. Limpiar textos originales
       const cleanedMessages = parsedMessages.map(msg => ({
         ...msg,
-        original: cleanOriginalText(msg.original, msg.type, msg.clientNumber)
+        originalWithFormat: msg.original, // Mantener formato completo para UI
+        original: cleanOriginalText(msg.original, msg.type, msg.clientNumber) // Texto limpio para traducir
       }));
 
       // 3. Traducir en lote
