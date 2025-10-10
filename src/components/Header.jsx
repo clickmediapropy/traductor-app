@@ -5,9 +5,12 @@ export default function Header({ onOpenSettings, onOpenInstructions, hasApiKey, 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-3">
       <div className="mx-auto max-w-3xl flex items-center justify-between">
-        <h1 className="text-lg sm:text-xl font-semibold font-display bg-gradient-to-r from-cyan-400 to-violet-500 bg-clip-text text-transparent">
-          ElizabethAI
-        </h1>
+        <div className="flex items-center gap-3">
+          <img src="/logo.png" alt="ElizabethAI Logo" className="w-10 h-10 sm:w-12 sm:h-12" />
+          <h1 className="text-lg sm:text-xl font-semibold font-display bg-gradient-to-r from-cyan-400 to-violet-500 bg-clip-text text-transparent">
+            ElizabethAI
+          </h1>
+        </div>
 
         <div className="flex items-center gap-2">
           {/* Botón de instrucciones personalizadas */}
