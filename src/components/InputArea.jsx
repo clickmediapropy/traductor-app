@@ -9,7 +9,7 @@ export default function InputArea({ inputText, setInputText, onTranslate, onClea
 
   return (
     <div className="bg-white/70 backdrop-blur-md neon-border shadow-neonSoft rounded-2xl p-6 transition-shadow duration-200">
-      <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">
+      <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
         Mensajes de Telegram
       </h2>
 
@@ -22,11 +22,11 @@ Ejemplo:
 教授: Análisis del mercado...
 30(女): Tengo una pregunta...
 32: Gracias por la info...`}
-        className="w-full min-h-[300px] p-4 border border-gray-300 rounded-xl hover:border-gray-400 focus-ring font-mono text-sm resize-y placeholder:text-gray-400"
+        className="w-full min-h-[220px] sm:min-h-[300px] p-3 sm:p-4 border border-gray-300 rounded-xl hover:border-gray-400 focus-ring font-mono text-sm resize-y placeholder:text-gray-400"
         disabled={isLoading}
       />
 
-      <div className="flex gap-3 mt-4">
+      <div className="flex flex-col sm:flex-row gap-3 mt-3 sm:mt-4">
         <button
           onClick={handleTranslateClick}
           disabled={!hasApiKey || !inputText.trim() || isLoading}
@@ -39,7 +39,7 @@ Ejemplo:
         <button
           onClick={onClear}
           disabled={isLoading}
-          className="flex items-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold py-2 px-6 rounded-xl transition-colors transition-transform duration-200 active:scale-95 focus-ring"
+          className="flex items-center justify-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold py-2 px-6 rounded-xl transition-colors transition-transform duration-200 active:scale-95 focus-ring"
         >
           <span>🗑️</span>
           <span>Limpiar</span>

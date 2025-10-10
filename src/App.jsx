@@ -103,7 +103,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-aurora-light text-gray-900">
+    <div className="min-h-screen bg-aurora-light text-gray-900 pb-safe">
       <header className="sticky top-0 z-30 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b border-gray-200">
         <Header
           onOpenSettings={() => setShowApiModal(true)}
@@ -113,7 +113,7 @@ function App() {
         />
       </header>
 
-      <main className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-6 space-y-4">
+      <main className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
         {/* Input Area */}
         <section className="animate-fade-in">
           <InputArea
