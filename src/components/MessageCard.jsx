@@ -76,7 +76,7 @@ export default function MessageCard({ message, onUpdate, onRetranslate, isRetran
         <label className="block text-xs font-semibold text-gray-700 mb-2">
           🇨🇳 ORIGINAL
         </label>
-        <div className="bg-gray-50 p-3 rounded-xl border border-gray-200">
+        <div className="bg-pink-50 p-3 rounded-xl border border-pink-200">
           <p className="font-chinese text-[15px] leading-7 text-gray-800 whitespace-pre-wrap">
             {message.originalWithFormat}
           </p>
@@ -88,7 +88,7 @@ export default function MessageCard({ message, onUpdate, onRetranslate, isRetran
         <label className="block text-xs font-semibold text-gray-700 mb-2">
           📖 TRADUCCIÓN LITERAL
         </label>
-        <div className="bg-blue-50/70 backdrop-blur-sm p-3 rounded-xl border border-blue-200">
+        <div className="bg-orange-50 backdrop-blur-sm p-3 rounded-xl border border-orange-200">
           <p className="text-[15px] leading-7 text-gray-800 whitespace-pre-wrap">
             {message.literalTranslation || '[Cargando...]'}
           </p>
@@ -104,10 +104,10 @@ export default function MessageCard({ message, onUpdate, onRetranslate, isRetran
           <textarea
             value={editedTranslation}
             onChange={(e) => setEditedTranslation(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-xl hover:border-gray-400 focus-ring min-h-[100px]"
+            className="w-full p-3 bg-green-50 border border-green-300 rounded-xl hover:border-green-400 focus-ring min-h-[100px]"
           />
         ) : (
-          <div className="bg-white p-3 rounded-xl border border-gray-200">
+          <div className="bg-green-50 p-3 rounded-xl border border-green-200">
             <p className="text-[15px] leading-7 text-gray-800 whitespace-pre-wrap">
               {message.translation}
             </p>
