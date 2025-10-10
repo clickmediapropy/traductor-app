@@ -7,6 +7,28 @@ export default function InputArea({ inputText, setInputText, onTranslate, onClea
     onTranslate();
   };
 
+  // Fix para pegado de textos largos en móvil
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pastedText = e.clipboardData.getData('text');
+
+    // Actualizar el state directamente con todo el texto pegado
+    const textarea = e.target;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const currentValue = inputText || '';
+
+    // Insertar el texto pegado en la posición del cursor
+    const newValue = currentValue.substring(0, start) + pastedText + currentValue.substring(end);
+    setInputText(newValue);
+
+    // Posicionar el cursor después del texto pegado (en el próximo tick)
+    setTimeout(() => {
+      const newCursorPos = start + pastedText.length;
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+  };
+
   return (
     <div className="bg-white/70 backdrop-blur-md neon-border shadow-neonSoft rounded-2xl p-6 transition-shadow duration-200">
       <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
@@ -16,6 +38,7 @@ export default function InputArea({ inputText, setInputText, onTranslate, onClea
       <textarea
         value={inputText}
         onChange={(e) => setInputText(e.target.value)}
+        onPaste={handlePaste}
         placeholder={`Pegá todos los mensajes de Telegram aquí...
 
 Ejemplo:
