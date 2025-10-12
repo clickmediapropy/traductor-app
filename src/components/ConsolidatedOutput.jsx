@@ -11,14 +11,15 @@ export default function ConsolidatedOutput({ messages }) {
   /**
    * Genera el texto consolidado de todos los mensajes
    * Mantiene el prefijo original (教授:, 30(女):, etc.) y formato completo
+   * Agrega backticks markdown alrededor de cada texto
    */
   const generateConsolidatedText = () => {
     return messages.map((msg, index) => {
       const separator = '─────';
       const messageSeparator = '🔹 🔹 🔹';
 
-      // Construir el bloque de mensaje: original + separador + traducción
-      let block = `${msg.originalWithFormat}\n${separator}\n${msg.translation}`;
+      // Construir el bloque de mensaje con backticks: original + separador + traducción
+      let block = `\`${msg.originalWithFormat}\`\n${separator}\n\`${msg.translation}\``;
 
       // Agregar separador entre mensajes (excepto después del último)
       if (index < messages.length - 1) {
