@@ -47,6 +47,7 @@ export default function CodeInput({ onMessagesRetrieved, isLoading: externalLoad
         .join('\n\n');
 
       // Call parent with the retrieved text
+      console.log('[CodeInput] Retrieved messages:', data.messages.length, 'Formatted text length:', formattedText.length);
       onMessagesRetrieved(formattedText);
 
       // Reset

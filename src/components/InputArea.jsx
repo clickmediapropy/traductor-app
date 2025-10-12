@@ -235,13 +235,16 @@ export default function InputArea({ onTranslate, onClear, isLoading, hasApiKey }
 
   // Handle messages retrieved from bot
   const handleBotMessages = (text) => {
+    console.log('[InputArea] handleBotMessages called with text length:', text.length);
     if (editableRef.current) {
       editableRef.current.innerText = text;
       setHasContent(true);
       setShowPlaceholder(false);
+      console.log('[InputArea] Text inserted into editable div');
     }
     // Switch to paste tab to show the content
     setActiveTab('paste');
+    console.log('[InputArea] Switched to paste tab');
   };
 
   return (
