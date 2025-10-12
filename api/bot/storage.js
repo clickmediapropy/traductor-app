@@ -3,12 +3,23 @@
  * TODO: Migrate to Vercel KV or Redis for production
  */
 
-// In-memory storage (resets on serverless cold start)
-const sessions = new Map();
+// Use global object to share state across serverless function invocations
+// This works because Vercel reuses the same Node.js process for multiple requests
+if (!global.__botSessions) {
+  global.__botSessions = new Map();
+  console.log('[Storage] Initialized global sessions Map');
+}
+const sessions = global.__botSessions;
 
-// Initialize test session that never expires
+// Initialize test session that never expires (only if not already exists)
 function initTestSession() {
   const testCode = 'TEST99';
+
+  // Only initialize if doesn't exist
+  if (sessions.has(testCode)) {
+    return;
+  }
+
   const now = new Date();
   const neverExpires = new Date('2099-12-31T23:59:59Z'); // Far future date
 
@@ -39,6 +50,8 @@ function initTestSession() {
     expiresAt: neverExpires.toISOString(),
     active: false // Already closed, ready to use
   });
+
+  console.log('[Storage] TEST99 session initialized');
 }
 
 // Initialize on module load
