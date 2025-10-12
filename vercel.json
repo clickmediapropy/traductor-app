@@ -1,4 +1,16 @@
 {
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/api/bot/webhook",
+      "destination": "/api/bot/webhook.js"
+    },
+    {
+      "source": "/api/bot/get-messages",
+      "destination": "/api/bot/get-messages.js"
+    }
+  ],
   "functions": {
     "api/**/*.js": {
       "maxDuration": 10
