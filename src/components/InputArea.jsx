@@ -6,6 +6,7 @@ import { useRef, useState } from 'react';
 export default function InputArea({ onTranslate, onClear, isLoading, hasApiKey }) {
   const textareaRef = useRef(null);
   const [hasContent, setHasContent] = useState(false);
+  const [pasteWarning, setPasteWarning] = useState(false);
 
   const handleTranslateClick = () => {
     if (!hasApiKey || isLoading) return;
@@ -20,6 +21,73 @@ export default function InputArea({ onTranslate, onClear, isLoading, hasApiKey }
     setHasContent(Boolean(textareaRef.current.value && textareaRef.current.value.length > 0));
   };
 
+  const handlePaste = async (e) => {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    let pastedText = '';
+
+    // Try to read from event clipboard data first
+    if (e.clipboardData && e.clipboardData.getData) {
+      pastedText = e.clipboardData.getData('text/plain');
+    }
+
+    // Fallback: async Clipboard API (often more reliable on iOS)
+    if (!pastedText && navigator.clipboard && navigator.clipboard.readText) {
+      try {
+        pastedText = await navigator.clipboard.readText();
+      } catch (err) {
+        // ignore and allow native paste
+      }
+    }
+
+    if (!pastedText) {
+      // Allow native paste. On iOS, wait a bit and verify content length to detect loss.
+      if (isIOS) {
+        const expectedLength = e.clipboardData?.getData('text/plain')?.length || 0;
+        setTimeout(() => {
+          const actualLength = textareaRef.current?.value?.length || 0;
+          if (expectedLength && actualLength && expectedLength - actualLength > 100) {
+            setPasteWarning(true);
+          } else {
+            setPasteWarning(false);
+          }
+          handleInput();
+        }, 200);
+      }
+      return; // do not prevent default
+    }
+
+    // We successfully read text; handle paste ourselves
+    e.preventDefault();
+    const ta = textareaRef.current;
+    if (!ta) return;
+
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const currentValue = ta.value;
+    const newValue = currentValue.substring(0, start) + pastedText + currentValue.substring(end);
+    ta.value = newValue;
+
+    const newCursorPos = start + pastedText.length;
+    ta.selectionStart = newCursorPos;
+    ta.selectionEnd = newCursorPos;
+
+    setPasteWarning(false);
+    handleInput();
+  };
+
+  const handlePasteButton = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (textareaRef.current) {
+        textareaRef.current.value = text;
+        setPasteWarning(false);
+        handleInput();
+      }
+    } catch (err) {
+      alert('No se pudo pegar. Probá el gesto de pegar manual.');
+    }
+  };
+
   return (
     <div className="bg-white/70 backdrop-blur-md neon-border shadow-neonSoft rounded-2xl p-6 transition-shadow duration-200">
       <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
@@ -29,6 +97,7 @@ export default function InputArea({ onTranslate, onClear, isLoading, hasApiKey }
       <textarea
         ref={textareaRef}
         onInput={handleInput}
+        onPaste={handlePaste}
         placeholder={`Pegá todos los mensajes de Telegram aquí...
 
 Ejemplo:
@@ -40,6 +109,15 @@ Ejemplo:
       />
 
       <div className="flex flex-col sm:flex-row gap-3 mt-3 sm:mt-4">
+        <button
+          onClick={handlePasteButton}
+          disabled={isLoading}
+          className="flex items-center justify-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold py-2 px-6 rounded-xl transition-colors transition-transform duration-200 active:scale-95 focus-ring"
+        >
+          <span>📋</span>
+          <span>Pegar</span>
+        </button>
+
         <button
           onClick={handleTranslateClick}
           disabled={!hasApiKey || !hasContent || isLoading}
@@ -64,6 +142,12 @@ Ejemplo:
           <span>Limpiar</span>
         </button>
       </div>
+
+      {pasteWarning && (
+        <div className="text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-xl p-3 mt-2">
+          ⚠️ Parece que no se pegó todo el contenido. Intentá de nuevo o usá el botón "Pegar".
+        </div>
+      )}
 
       {!hasApiKey && (
         <p className="text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-xl p-3 mt-4">
