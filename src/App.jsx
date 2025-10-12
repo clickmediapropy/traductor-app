@@ -8,6 +8,7 @@ import LoadingSpinner from './components/LoadingSpinner';
 import { parseMessages, cleanOriginalText } from './services/messageParser';
 import { translateBatch, translateMessage, translateLiteral } from './services/claudeAPI';
 import { getCustomInstructions } from './services/translationPrompt';
+// v2.0 - Bot integration
 
 function App() {
   // Estado
