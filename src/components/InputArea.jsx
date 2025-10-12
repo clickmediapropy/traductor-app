@@ -241,17 +241,21 @@ export default function InputArea({ onTranslate, onClear, isLoading, hasApiKey }
     setActiveTab('paste');
     console.log('[InputArea] Switched to paste tab');
 
-    // Use setTimeout to ensure the contentEditable div is rendered before inserting text
-    setTimeout(() => {
-      if (editableRef.current) {
-        editableRef.current.innerText = text;
-        setHasContent(true);
-        setShowPlaceholder(false);
-        console.log('[InputArea] Text inserted into editable div');
-      } else {
-        console.error('[InputArea] editableRef.current is null!');
-      }
-    }, 0);
+    // Use requestAnimationFrame + setTimeout to ensure React completes the render cycle
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        if (editableRef.current) {
+          editableRef.current.innerText = text;
+          setHasContent(true);
+          setShowPlaceholder(false);
+          // Trigger input event to update state
+          handleInput();
+          console.log('[InputArea] Text inserted into editable div');
+        } else {
+          console.error('[InputArea] editableRef.current is null after tab switch!');
+        }
+      }, 50);
+    });
   };
 
   return (
