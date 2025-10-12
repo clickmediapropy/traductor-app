@@ -11,15 +11,15 @@ export default function ConsolidatedOutput({ messages }) {
   /**
    * Genera el texto consolidado de todos los mensajes
    * Mantiene el prefijo original (教授:, 30(女):, etc.) y formato completo
-   * Agrega triple backticks markdown para formato de código en Telegram
+   * Agrega triple backticks markdown solo en la traducción
    */
   const generateConsolidatedText = () => {
     return messages.map((msg, index) => {
       const separator = '─────';
       const messageSeparator = '🔹 🔹 🔹';
 
-      // Construir el bloque de mensaje con triple backticks: original + separador + traducción
-      let block = `\`\`\`\n${msg.originalWithFormat}\n\`\`\`\n${separator}\n\`\`\`\n${msg.translation}\n\`\`\``;
+      // Construir el bloque de mensaje: original (sin markdown) + separador + traducción (con triple backticks)
+      let block = `${msg.originalWithFormat}\n${separator}\n\`\`\`\n${msg.translation}\n\`\`\``;
 
       // Agregar separador entre mensajes (excepto después del último)
       if (index < messages.length - 1) {
