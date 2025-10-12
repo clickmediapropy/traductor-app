@@ -1,4 +1,4 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "rm -rf dist node_modules/.vite && npm run build",
   "outputDirectory": "dist"
 }
