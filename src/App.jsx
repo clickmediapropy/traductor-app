@@ -5,6 +5,7 @@ import CustomInstructionsModal from './components/CustomInstructionsModal';
 import InputArea from './components/InputArea';
 import MessageCard from './components/MessageCard';
 import LoadingSpinner from './components/LoadingSpinner';
+import InstallPWA from './components/InstallPWA';
 import { parseMessages, cleanOriginalText } from './services/messageParser';
 import { translateBatch, translateMessage, translateLiteral } from './services/claudeAPI';
 import { getCustomInstructions } from './services/translationPrompt';
@@ -208,6 +209,9 @@ function App() {
           onUpdate={updateCustomInstructionsCount}
         />
       )}
+
+      {/* PWA Install Prompt */}
+      <InstallPWA />
     </div>
   );
 }
