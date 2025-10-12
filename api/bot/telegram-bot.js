@@ -63,7 +63,7 @@ Bienvenido! Este bot te ayuda a enviar mensajes de Telegram a la app de traducci
 // Handle /new command
 export async function handleNew(botToken, chatId) {
   // Check if already has active session
-  const existingCode = getActiveChatSession(chatId);
+  const existingCode = await getActiveChatSession(chatId);
   if (existingCode) {
     await sendMessage(
       botToken,
@@ -74,7 +74,7 @@ export async function handleNew(botToken, chatId) {
   }
 
   // Create new session
-  const code = createSession(chatId);
+  const code = await createSession(chatId);
 
   await sendMessage(
     botToken,
@@ -95,7 +95,7 @@ El código expira en 1 hora.
 
 // Handle /done command
 export async function handleDone(botToken, chatId) {
-  const code = getActiveChatSession(chatId);
+  const code = await getActiveChatSession(chatId);
 
   if (!code) {
     await sendMessage(
@@ -106,13 +106,13 @@ export async function handleDone(botToken, chatId) {
     return;
   }
 
-  const session = getSession(code);
+  const session = await getSession(code);
   if (!session) {
     await sendMessage(botToken, chatId, '❌ Error: Sesión no encontrada.');
     return;
   }
 
-  closeSession(code);
+  await closeSession(code);
 
   await sendMessage(
     botToken,
@@ -130,7 +130,7 @@ https://traductor-app-two.vercel.app
 
 // Handle /cancel command
 export async function handleCancel(botToken, chatId) {
-  const code = getActiveChatSession(chatId);
+  const code = await getActiveChatSession(chatId);
 
   if (!code) {
     await sendMessage(
@@ -141,7 +141,7 @@ export async function handleCancel(botToken, chatId) {
     return;
   }
 
-  closeSession(code);
+  await closeSession(code);
 
   await sendMessage(
     botToken,
@@ -152,7 +152,7 @@ export async function handleCancel(botToken, chatId) {
 
 // Handle forwarded message
 export async function handleForwardedMessage(botToken, chatId, message) {
-  const code = getActiveChatSession(chatId);
+  const code = await getActiveChatSession(chatId);
 
   if (!code) {
     await sendMessage(
@@ -163,10 +163,10 @@ export async function handleForwardedMessage(botToken, chatId, message) {
     return;
   }
 
-  const success = addMessage(code, message);
+  const success = await addMessage(code, message);
 
   if (success) {
-    const session = getSession(code);
+    const session = await getSession(code);
     // Send confirmation with message count
     await sendMessage(
       botToken,
