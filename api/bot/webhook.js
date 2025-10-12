@@ -21,11 +21,22 @@ export default async function handler(req, res) {
 
     const update = req.body;
 
+    // Log incoming update (for debugging)
+    console.log('[Webhook] Received update:', {
+      updateId: update.update_id,
+      messageId: update.message?.message_id,
+      chatId: update.message?.chat?.id,
+      text: update.message?.text,
+      isForwarded: !!(update.message?.forward_from || update.message?.forward_from_chat)
+    });
+
     // Cleanup expired sessions periodically
     cleanupExpired();
 
     // Handle the update
     await handleUpdate(botToken, update);
+
+    console.log('[Webhook] Update handled successfully');
 
     // Telegram expects 200 OK
     res.status(200).json({ ok: true });

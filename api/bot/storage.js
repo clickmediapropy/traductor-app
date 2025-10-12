@@ -69,6 +69,8 @@ export function createSession(chatId) {
     active: true
   });
 
+  console.log('[Storage] Created session:', code, 'for chatId:', chatId, 'Total sessions:', sessions.size);
+
   return code;
 }
 
@@ -133,4 +135,9 @@ export function cleanupExpired() {
       sessions.delete(code);
     }
   }
+}
+
+// Get all sessions (for debugging)
+export function getAllSessions() {
+  return Array.from(sessions.values());
 }
