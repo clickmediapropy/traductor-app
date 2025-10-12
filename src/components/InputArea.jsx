@@ -9,8 +9,18 @@ export default function InputArea({ onTranslate, onClear, isLoading, hasApiKey }
   const [hasContent, setHasContent] = useState(false);
   const [pasteWarning, setPasteWarning] = useState(false);
   const [showPlaceholder, setShowPlaceholder] = useState(true);
+  const [showDebugPanel, setShowDebugPanel] = useState(false);
+  const [debugLogs, setDebugLogs] = useState([]);
 
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+  // Helper to add debug log
+  const addDebugLog = (message, data = null) => {
+    const timestamp = new Date().toLocaleTimeString();
+    const logEntry = { timestamp, message, data };
+    setDebugLogs(prev => [...prev, logEntry]);
+    console.log(message, data || '');
+  };
 
   const handleTranslateClick = () => {
     if (!hasApiKey || isLoading) return;
@@ -49,21 +59,26 @@ export default function InputArea({ onTranslate, onClear, isLoading, hasApiKey }
   const handlePaste = (e) => {
     e.preventDefault();
 
+    // Clear previous logs for new paste
+    setDebugLogs([]);
+
     // Log ALL available clipboard types (critical for debugging Telegram)
     const types = e.clipboardData ? Array.from(e.clipboardData.types) : [];
-    console.log('📋 [Clipboard Types]', types);
+    addDebugLog('📋 Clipboard Types', types);
 
     let pastedText = '';
     let sourceType = '';
+    let htmlContent = '';
+    let plainContent = '';
 
     // PRIORITY 1: Try text/html FIRST (Telegram often puts full content here)
     if (e.clipboardData && types.includes('text/html')) {
-      const html = e.clipboardData.getData('text/html');
-      if (html) {
-        pastedText = extractTextFromHTML(html);
+      htmlContent = e.clipboardData.getData('text/html');
+      if (htmlContent) {
+        pastedText = extractTextFromHTML(htmlContent);
         sourceType = 'text/html';
-        console.log('✅ [Used text/html]', {
-          htmlLength: html.length,
+        addDebugLog('✅ Used text/html', {
+          htmlLength: htmlContent.length,
           extractedTextLength: pastedText.length,
           lines: pastedText.split('\n').length
         });
@@ -72,40 +87,49 @@ export default function InputArea({ onTranslate, onClear, isLoading, hasApiKey }
 
     // PRIORITY 2: Fallback to text/plain
     if (!pastedText && e.clipboardData && types.includes('text/plain')) {
-      pastedText = e.clipboardData.getData('text/plain');
+      plainContent = e.clipboardData.getData('text/plain');
+      pastedText = plainContent;
       sourceType = 'text/plain';
-      console.log('⚠️ [Fell back to text/plain]', {
+      addDebugLog('⚠️ Fell back to text/plain', {
         length: pastedText.length,
         lines: pastedText.split('\n').length
       });
     }
 
+    // Get both for comparison
+    if (!plainContent && e.clipboardData && types.includes('text/plain')) {
+      plainContent = e.clipboardData.getData('text/plain');
+    }
+    if (!htmlContent && e.clipboardData && types.includes('text/html')) {
+      htmlContent = e.clipboardData.getData('text/html');
+    }
+
     // Debug logging for iOS with comparison
     if (isIOS) {
-      console.log('🔍 [iOS PASTE DEBUG]');
-      console.log('User Agent:', navigator.userAgent);
-      console.log('Source type used:', sourceType);
-      console.log('Final text length:', pastedText.length);
-      console.log('Final text lines:', pastedText.split('\n').length);
-      console.log('Has newlines:', pastedText.includes('\n'));
-      console.log('First 200 chars:', pastedText.substring(0, 200));
+      addDebugLog('🔍 iOS PASTE DEBUG', {
+        userAgent: navigator.userAgent.substring(0, 100),
+        sourceType,
+        finalTextLength: pastedText.length,
+        finalTextLines: pastedText.split('\n').length,
+        hasNewlines: pastedText.includes('\n'),
+        first200chars: pastedText.substring(0, 200)
+      });
 
       // Compare text/plain vs text/html if both exist
       if (types.includes('text/plain') && types.includes('text/html')) {
-        const plainText = e.clipboardData.getData('text/plain');
-        const htmlText = e.clipboardData.getData('text/html');
-        console.log('📊 [Comparison]', {
-          plainTextLength: plainText.length,
-          htmlLength: htmlText.length,
-          difference: htmlText.length - plainText.length,
-          plainTextLines: plainText.split('\n').length,
-          extractedLines: pastedText.split('\n').length
+        addDebugLog('📊 Comparison Plain vs HTML', {
+          plainTextLength: plainContent.length,
+          plainTextLines: plainContent.split('\n').length,
+          htmlLength: htmlContent.length,
+          extractedFromHtmlLength: extractTextFromHTML(htmlContent).length,
+          extractedFromHtmlLines: extractTextFromHTML(htmlContent).split('\n').length,
+          difference: htmlContent.length - plainContent.length
         });
       }
     }
 
     if (!pastedText) {
-      console.warn('[Paste] No text data in clipboard');
+      addDebugLog('❌ No text data in clipboard');
       return;
     }
 
@@ -283,6 +307,17 @@ Ejemplo:
           <span>🗑️</span>
           <span>Limpiar</span>
         </button>
+
+        {/* Debug button - shows paste logs */}
+        {isIOS && debugLogs.length > 0 && (
+          <button
+            onClick={() => setShowDebugPanel(!showDebugPanel)}
+            className="flex items-center justify-center gap-2 bg-purple-50 border border-purple-300 hover:bg-purple-100 text-purple-700 font-semibold py-2 px-6 rounded-xl transition-colors transition-transform duration-200 active:scale-95 focus-ring"
+          >
+            <span>🐛</span>
+            <span>Debug</span>
+          </button>
+        )}
       </div>
 
       {pasteWarning && (
@@ -295,6 +330,57 @@ Ejemplo:
         <p className="text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-xl p-3 mt-4">
           ⚠️ Configurá tu API key de Anthropic para comenzar a traducir
         </p>
+      )}
+
+      {/* Debug Panel Modal */}
+      {showDebugPanel && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowDebugPanel(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-gray-900">🐛 Debug Logs - Último Paste</h3>
+              <button
+                onClick={() => setShowDebugPanel(false)}
+                className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="p-4 overflow-y-auto max-h-[calc(80vh-120px)] space-y-3">
+              {debugLogs.map((log, index) => (
+                <div key={index} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                  <div className="flex items-start justify-between mb-2">
+                    <span className="font-semibold text-gray-900">{log.message}</span>
+                    <span className="text-xs text-gray-500">{log.timestamp}</span>
+                  </div>
+                  {log.data && (
+                    <pre className="text-xs bg-white p-2 rounded border border-gray-200 overflow-x-auto font-mono">
+                      {JSON.stringify(log.data, null, 2)}
+                    </pre>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="p-4 border-t border-gray-200 bg-gray-50">
+              <button
+                onClick={() => {
+                  const logText = debugLogs.map(log =>
+                    `[${log.timestamp}] ${log.message}\n${log.data ? JSON.stringify(log.data, null, 2) : ''}\n`
+                  ).join('\n---\n\n');
+                  navigator.clipboard.writeText(logText).then(() => {
+                    alert('Logs copiados al portapapeles! Ahora podés compartirlos.');
+                  }).catch(() => {
+                    alert('No se pudo copiar. Tomá screenshot del panel.');
+                  });
+                }}
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+              >
+                📋 Copiar Logs
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
