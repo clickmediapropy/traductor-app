@@ -31,7 +31,7 @@ export default async function handler(req, res) {
     const normalizedCode = code.toUpperCase().trim();
 
     // Get session
-    const session = getSession(normalizedCode);
+    const session = await getSession(normalizedCode);
 
     if (!session) {
       return res.status(404).json({
