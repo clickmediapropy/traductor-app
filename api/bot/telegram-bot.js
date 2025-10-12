@@ -48,7 +48,7 @@ Bienvenido! Este bot te ayuda a enviar mensajes de Telegram a la app de traducci
 1️⃣ Envía \`/new\` para crear una nueva sesión
 2️⃣ Reenvía (forward) los mensajes que quieras traducir
 3️⃣ Envía \`/done\` cuando termines
-4️⃣ Usá el código en la web app: https://traductor-app.vercel.app
+4️⃣ Usá el código en la web app: https://traductor-6jfnhtghb-nicolas-projects-15d35e78.vercel.app
 
 *Comandos:*
 /new - Crear nueva sesión
@@ -123,7 +123,7 @@ Código: \`${code}\`
 Mensajes recibidos: ${session.messages.length}
 
 Ahora ingresá el código en la web app:
-https://traductor-app.vercel.app
+https://traductor-6jfnhtghb-nicolas-projects-15d35e78.vercel.app
 `
   );
 }
