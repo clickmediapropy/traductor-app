@@ -33,24 +33,75 @@ export default function InputArea({ onTranslate, onClear, isLoading, hasApiKey }
     }
   };
 
+  // Helper function to extract clean text from HTML
+  const extractTextFromHTML = (html) => {
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      // Get text content, preserving line breaks
+      return doc.body.textContent || doc.body.innerText || '';
+    } catch (err) {
+      console.error('[HTML Parse] Error:', err);
+      return '';
+    }
+  };
+
   const handlePaste = (e) => {
     e.preventDefault();
 
-    // Get clipboard data
+    // Log ALL available clipboard types (critical for debugging Telegram)
+    const types = e.clipboardData ? Array.from(e.clipboardData.types) : [];
+    console.log('📋 [Clipboard Types]', types);
+
     let pastedText = '';
-    if (e.clipboardData && e.clipboardData.getData) {
-      pastedText = e.clipboardData.getData('text/plain');
+    let sourceType = '';
+
+    // PRIORITY 1: Try text/html FIRST (Telegram often puts full content here)
+    if (e.clipboardData && types.includes('text/html')) {
+      const html = e.clipboardData.getData('text/html');
+      if (html) {
+        pastedText = extractTextFromHTML(html);
+        sourceType = 'text/html';
+        console.log('✅ [Used text/html]', {
+          htmlLength: html.length,
+          extractedTextLength: pastedText.length,
+          lines: pastedText.split('\n').length
+        });
+      }
     }
 
-    // Debug logging for iOS
+    // PRIORITY 2: Fallback to text/plain
+    if (!pastedText && e.clipboardData && types.includes('text/plain')) {
+      pastedText = e.clipboardData.getData('text/plain');
+      sourceType = 'text/plain';
+      console.log('⚠️ [Fell back to text/plain]', {
+        length: pastedText.length,
+        lines: pastedText.split('\n').length
+      });
+    }
+
+    // Debug logging for iOS with comparison
     if (isIOS) {
       console.log('🔍 [iOS PASTE DEBUG]');
       console.log('User Agent:', navigator.userAgent);
-      console.log('Clipboard types:', e.clipboardData?.types);
-      console.log('Pasted text length:', pastedText.length);
-      console.log('Pasted text lines:', pastedText.split('\n').length);
+      console.log('Source type used:', sourceType);
+      console.log('Final text length:', pastedText.length);
+      console.log('Final text lines:', pastedText.split('\n').length);
       console.log('Has newlines:', pastedText.includes('\n'));
       console.log('First 200 chars:', pastedText.substring(0, 200));
+
+      // Compare text/plain vs text/html if both exist
+      if (types.includes('text/plain') && types.includes('text/html')) {
+        const plainText = e.clipboardData.getData('text/plain');
+        const htmlText = e.clipboardData.getData('text/html');
+        console.log('📊 [Comparison]', {
+          plainTextLength: plainText.length,
+          htmlLength: htmlText.length,
+          difference: htmlText.length - plainText.length,
+          plainTextLines: plainText.split('\n').length,
+          extractedLines: pastedText.split('\n').length
+        });
+      }
     }
 
     if (!pastedText) {
