@@ -4,6 +4,7 @@ import ApiKeyModal from './components/ApiKeyModal';
 import CustomInstructionsModal from './components/CustomInstructionsModal';
 import InputArea from './components/InputArea';
 import MessageCard from './components/MessageCard';
+import ConsolidatedOutput from './components/ConsolidatedOutput';
 import LoadingSpinner from './components/LoadingSpinner';
 import InstallPWA from './components/InstallPWA';
 import { parseMessages, cleanOriginalText } from './services/messageParser';
@@ -21,6 +22,7 @@ function App() {
   const [customInstructionsCount, setCustomInstructionsCount] = useState(0);
   const [error, setError] = useState(null);
   const [retranslatingMessageId, setRetranslatingMessageId] = useState(null);
+  const [viewMode, setViewMode] = useState('cards'); // 'cards' | 'consolidated'
 
   // Verificar API key al cargar
   useEffect(() => {
@@ -171,21 +173,53 @@ function App() {
         {/* Results List */}
         {messages.length > 0 && (
           <section className="animate-fade-in">
-            <h2 className="text-xl font-semibold mb-3 text-gray-800">
-              Resultados ({messages.length} mensajes)
-            </h2>
+            {/* Header con toggle de vista */}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-gray-800">
+                Resultados ({messages.length} mensajes)
+              </h2>
 
-            <div className="flex flex-col gap-3">
-              {messages.map(message => (
-                <MessageCard
-                  key={message.id}
-                  message={message}
-                  onUpdate={handleUpdateMessage}
-                  onRetranslate={handleRetranslate}
-                  isRetranslating={retranslatingMessageId === message.id}
-                />
-              ))}
+              {/* Toggle buttons */}
+              <div className="flex gap-2 bg-white rounded-xl p-1 border border-gray-200">
+                <button
+                  onClick={() => setViewMode('cards')}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
+                    viewMode === 'cards'
+                      ? 'bg-purple-600 text-white shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  🃏 Tarjetas
+                </button>
+                <button
+                  onClick={() => setViewMode('consolidated')}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
+                    viewMode === 'consolidated'
+                      ? 'bg-purple-600 text-white shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  📄 Todo Junto
+                </button>
+              </div>
             </div>
+
+            {/* Render condicional según viewMode */}
+            {viewMode === 'cards' ? (
+              <div className="flex flex-col gap-3">
+                {messages.map(message => (
+                  <MessageCard
+                    key={message.id}
+                    message={message}
+                    onUpdate={handleUpdateMessage}
+                    onRetranslate={handleRetranslate}
+                    isRetranslating={retranslatingMessageId === message.id}
+                  />
+                ))}
+              </div>
+            ) : (
+              <ConsolidatedOutput messages={messages} />
+            )}
           </section>
         )}
 
