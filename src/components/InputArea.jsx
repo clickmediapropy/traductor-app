@@ -25,52 +25,76 @@ export default function InputArea({ onTranslate, onClear, isLoading, hasApiKey }
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     let pastedText = '';
 
-    // Try to read from event clipboard data first
+    // iOS: always intercept and insert manually to avoid native truncation
+    if (isIOS) {
+      e.preventDefault();
+
+      // Prefer event clipboard data
+      if (e.clipboardData && e.clipboardData.getData) {
+        pastedText = e.clipboardData.getData('text/plain');
+      }
+
+      // Fallback to async API if needed
+      if (!pastedText && navigator.clipboard && navigator.clipboard.readText) {
+        try {
+          pastedText = await navigator.clipboard.readText();
+        } catch (err) {
+          // keep pastedText empty if blocked
+        }
+      }
+
+      if (!pastedText) {
+        // Could not access clipboard contents; show warning and exit
+        setPasteWarning(true);
+        return;
+      }
+
+      const ta = textareaRef.current;
+      if (!ta) return;
+
+      const start = ta.selectionStart;
+      const end = ta.selectionEnd;
+      const currentValue = ta.value;
+      const newValue = currentValue.substring(0, start) + pastedText + currentValue.substring(end);
+      ta.value = newValue;
+
+      const newCursorPos = start + pastedText.length;
+      ta.selectionStart = newCursorPos;
+      ta.selectionEnd = newCursorPos;
+
+      setPasteWarning(false);
+      handleInput();
+      return;
+    }
+
+    // Non‑iOS: try to read text; if available, prevent default and insert
     if (e.clipboardData && e.clipboardData.getData) {
       pastedText = e.clipboardData.getData('text/plain');
     }
-
-    // Fallback: async Clipboard API (often more reliable on iOS)
     if (!pastedText && navigator.clipboard && navigator.clipboard.readText) {
       try {
         pastedText = await navigator.clipboard.readText();
       } catch (err) {
-        // ignore and allow native paste
+        // ignore; allow native paste
       }
     }
 
     if (!pastedText) {
-      // Allow native paste. On iOS, wait a bit and verify content length to detect loss.
-      if (isIOS) {
-        const expectedLength = e.clipboardData?.getData('text/plain')?.length || 0;
-        setTimeout(() => {
-          const actualLength = textareaRef.current?.value?.length || 0;
-          if (expectedLength && actualLength && expectedLength - actualLength > 100) {
-            setPasteWarning(true);
-          } else {
-            setPasteWarning(false);
-          }
-          handleInput();
-        }, 200);
-      }
-      return; // do not prevent default
+      // Allow native paste path
+      return;
     }
 
-    // We successfully read text; handle paste ourselves
     e.preventDefault();
     const ta = textareaRef.current;
     if (!ta) return;
-
     const start = ta.selectionStart;
     const end = ta.selectionEnd;
     const currentValue = ta.value;
     const newValue = currentValue.substring(0, start) + pastedText + currentValue.substring(end);
     ta.value = newValue;
-
     const newCursorPos = start + pastedText.length;
     ta.selectionStart = newCursorPos;
     ta.selectionEnd = newCursorPos;
-
     setPasteWarning(false);
     handleInput();
   };
