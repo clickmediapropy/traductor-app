@@ -5,6 +5,7 @@ import { useRef, useState } from 'react';
 
 export default function InputArea({ onTranslate, onClear, isLoading, hasApiKey }) {
   const textareaRef = useRef(null);
+  const hiddenPasteRef = useRef(null);
   const [hasContent, setHasContent] = useState(false);
   const [pasteWarning, setPasteWarning] = useState(false);
 
@@ -21,53 +22,38 @@ export default function InputArea({ onTranslate, onClear, isLoading, hasApiKey }
     setHasContent(Boolean(textareaRef.current.value && textareaRef.current.value.length > 0));
   };
 
-  const handlePaste = async (e) => {
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    let pastedText = '';
-
-    // iOS: always intercept and insert manually to avoid native truncation
-    if (isIOS) {
-      e.preventDefault();
-
-      // Prefer event clipboard data
-      if (e.clipboardData && e.clipboardData.getData) {
-        pastedText = e.clipboardData.getData('text/plain');
-      }
-
-      // Fallback to async API if needed
-      if (!pastedText && navigator.clipboard && navigator.clipboard.readText) {
-        try {
-          pastedText = await navigator.clipboard.readText();
-        } catch (err) {
-          // keep pastedText empty if blocked
+  // iOS workaround: let hidden textarea receive full paste, then copy to visible one
+  const handleHiddenPaste = () => {
+    setTimeout(() => {
+      if (hiddenPasteRef.current && textareaRef.current) {
+        const pastedContent = hiddenPasteRef.current.value;
+        if (pastedContent) {
+          // Append to main textarea
+          const currentValue = textareaRef.current.value;
+          textareaRef.current.value = currentValue + (currentValue ? '\n' : '') + pastedContent;
+          // Clear hidden textarea
+          hiddenPasteRef.current.value = '';
+          setPasteWarning(false);
+          handleInput();
         }
       }
+    }, 100);
+  };
 
-      if (!pastedText) {
-        // Could not access clipboard contents; show warning and exit
-        setPasteWarning(true);
-        return;
-      }
-
-      const ta = textareaRef.current;
-      if (!ta) return;
-
-      const start = ta.selectionStart;
-      const end = ta.selectionEnd;
-      const currentValue = ta.value;
-      const newValue = currentValue.substring(0, start) + pastedText + currentValue.substring(end);
-      ta.value = newValue;
-
-      const newCursorPos = start + pastedText.length;
-      ta.selectionStart = newCursorPos;
-      ta.selectionEnd = newCursorPos;
-
-      setPasteWarning(false);
-      handleInput();
+  const handlePaste = async (e) => {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    
+    // On iOS, redirect focus to hidden textarea to capture full paste
+    if (isIOS && hiddenPasteRef.current) {
+      e.preventDefault();
+      hiddenPasteRef.current.value = '';
+      hiddenPasteRef.current.focus();
+      // iOS will now paste into hidden textarea, handleHiddenPaste will copy it
       return;
     }
 
-    // Non‑iOS: try to read text; if available, prevent default and insert
+    // Non-iOS: try manual insert
+    let pastedText = '';
     if (e.clipboardData && e.clipboardData.getData) {
       pastedText = e.clipboardData.getData('text/plain');
     }
@@ -75,15 +61,12 @@ export default function InputArea({ onTranslate, onClear, isLoading, hasApiKey }
       try {
         pastedText = await navigator.clipboard.readText();
       } catch (err) {
-        // ignore; allow native paste
+        // ignore
       }
     }
-
     if (!pastedText) {
-      // Allow native paste path
-      return;
+      return; // allow native paste
     }
-
     e.preventDefault();
     const ta = textareaRef.current;
     if (!ta) return;
@@ -117,6 +100,27 @@ export default function InputArea({ onTranslate, onClear, isLoading, hasApiKey }
       <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
         Mensajes de Telegram
       </h2>
+
+      {/* Hidden textarea for iOS paste workaround */}
+      <textarea
+        ref={hiddenPasteRef}
+        onPaste={handleHiddenPaste}
+        onBlur={() => {
+          // Return focus to main textarea after paste completes
+          if (textareaRef.current) {
+            textareaRef.current.focus();
+          }
+        }}
+        style={{
+          position: 'absolute',
+          left: '-9999px',
+          width: '1px',
+          height: '1px',
+          opacity: 0,
+        }}
+        tabIndex={-1}
+        aria-hidden="true"
+      />
 
       <textarea
         ref={textareaRef}
