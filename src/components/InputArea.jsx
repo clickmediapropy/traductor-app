@@ -1,8 +1,9 @@
 /**
  * Área de input para pegar mensajes de Telegram
- * Usa contenteditable con workarounds específicos para iOS Safari
+ * Soporta: paste directo O código del bot
  */
 import { useRef, useState } from 'react';
+import CodeInput from './CodeInput';
 
 export default function InputArea({ onTranslate, onClear, isLoading, hasApiKey }) {
   const editableRef = useRef(null);
@@ -11,6 +12,7 @@ export default function InputArea({ onTranslate, onClear, isLoading, hasApiKey }
   const [showPlaceholder, setShowPlaceholder] = useState(true);
   const [showDebugPanel, setShowDebugPanel] = useState(false);
   const [debugLogs, setDebugLogs] = useState([]);
+  const [activeTab, setActiveTab] = useState('paste'); // 'paste' or 'bot'
 
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
@@ -231,14 +233,57 @@ export default function InputArea({ onTranslate, onClear, isLoading, hasApiKey }
     }
   };
 
+  // Handle messages retrieved from bot
+  const handleBotMessages = (text) => {
+    if (editableRef.current) {
+      editableRef.current.innerText = text;
+      setHasContent(true);
+      setShowPlaceholder(false);
+    }
+    // Switch to paste tab to show the content
+    setActiveTab('paste');
+  };
+
   return (
     <div className="bg-white/70 backdrop-blur-md neon-border shadow-neonSoft rounded-2xl p-6 transition-shadow duration-200">
       <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
         Mensajes de Telegram
       </h2>
 
-      {/* ContentEditable div with iOS-specific CSS */}
-      <div className="relative">
+      {/* Tabs */}
+      <div className="flex gap-2 mb-4 border-b border-gray-200">
+        <button
+          onClick={() => setActiveTab('paste')}
+          className={`px-4 py-2 font-medium transition-colors ${
+            activeTab === 'paste'
+              ? 'text-purple-600 border-b-2 border-purple-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          📋 Pegar Texto
+        </button>
+        <button
+          onClick={() => setActiveTab('bot')}
+          className={`px-4 py-2 font-medium transition-colors relative ${
+            activeTab === 'bot'
+              ? 'text-purple-600 border-b-2 border-purple-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          🤖 Código de Bot
+          {isIOS && (
+            <span className="ml-1 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+              iOS
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === 'paste' ? (
+        <>
+          {/* ContentEditable div with iOS-specific CSS */}
+          <div className="relative">
         {showPlaceholder && (
           <div className="absolute inset-0 p-3 sm:p-4 pointer-events-none font-mono text-sm text-gray-400 whitespace-pre-wrap">
 {`Pegá todos los mensajes de Telegram aquí...
@@ -330,6 +375,11 @@ Ejemplo:
         <p className="text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-xl p-3 mt-4">
           ⚠️ Configurá tu API key de Anthropic para comenzar a traducir
         </p>
+      )}
+        </>
+      ) : (
+        /* Bot Code Tab */
+        <CodeInput onMessagesRetrieved={handleBotMessages} isLoading={isLoading} />
       )}
 
       {/* Debug Panel Modal */}
