@@ -1,5 +1,6 @@
 /**
  * Component for entering bot code to retrieve messages
+ * v2.0.1 - Bot integration with API
  */
 import { useState } from 'react';
 

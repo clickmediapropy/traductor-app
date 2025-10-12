@@ -6,6 +6,44 @@
 // In-memory storage (resets on serverless cold start)
 const sessions = new Map();
 
+// Initialize test session that never expires
+function initTestSession() {
+  const testCode = 'TEST99';
+  const now = new Date();
+  const neverExpires = new Date('2099-12-31T23:59:59Z'); // Far future date
+
+  sessions.set(testCode, {
+    code: testCode,
+    chatId: 0,
+    messages: [
+      {
+        text: '教授: 这是一个测试消息',
+        forwardFrom: 'Test User',
+        timestamp: Math.floor(now.getTime() / 1000),
+        messageId: 1
+      },
+      {
+        text: '助理: 好的，我明白了',
+        forwardFrom: 'Test Assistant',
+        timestamp: Math.floor(now.getTime() / 1000),
+        messageId: 2
+      },
+      {
+        text: '30: 你好，我是客户',
+        forwardFrom: 'Test Client',
+        timestamp: Math.floor(now.getTime() / 1000),
+        messageId: 3
+      }
+    ],
+    createdAt: now.toISOString(),
+    expiresAt: neverExpires.toISOString(),
+    active: false // Already closed, ready to use
+  });
+}
+
+// Initialize on module load
+initTestSession();
+
 // Generate random 6-character code
 export function generateCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // No confusing chars (0, O, I, 1)
