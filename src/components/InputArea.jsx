@@ -1,97 +1,158 @@
 /**
- * Área de input para pegar mensajes de Telegram (uncontrolled para soportar paste en móvil)
+ * Área de input para pegar mensajes de Telegram
+ * Usa contenteditable con workarounds específicos para iOS Safari
  */
 import { useRef, useState } from 'react';
 
 export default function InputArea({ onTranslate, onClear, isLoading, hasApiKey }) {
-  const textareaRef = useRef(null);
-  const hiddenPasteRef = useRef(null);
+  const editableRef = useRef(null);
   const [hasContent, setHasContent] = useState(false);
   const [pasteWarning, setPasteWarning] = useState(false);
+  const [showPlaceholder, setShowPlaceholder] = useState(true);
+
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   const handleTranslateClick = () => {
     if (!hasApiKey || isLoading) return;
-    const value = textareaRef.current ? textareaRef.current.value : '';
+    const value = editableRef.current ? editableRef.current.innerText : '';
     const trimmed = value.trim();
     if (!trimmed) return;
     onTranslate(trimmed);
   };
 
   const handleInput = () => {
-    if (!textareaRef.current) return;
-    setHasContent(Boolean(textareaRef.current.value && textareaRef.current.value.length > 0));
-  };
+    if (!editableRef.current) return;
+    const text = editableRef.current.innerText;
+    const hasText = Boolean(text && text.trim().length > 0);
+    setHasContent(hasText);
+    setShowPlaceholder(!hasText);
 
-  // iOS workaround: let hidden textarea receive full paste, then copy to visible one
-  const handleHiddenPaste = () => {
-    setTimeout(() => {
-      if (hiddenPasteRef.current && textareaRef.current) {
-        const pastedContent = hiddenPasteRef.current.value;
-        if (pastedContent) {
-          // Append to main textarea
-          const currentValue = textareaRef.current.value;
-          textareaRef.current.value = currentValue + (currentValue ? '\n' : '') + pastedContent;
-          // Clear hidden textarea
-          hiddenPasteRef.current.value = '';
-          setPasteWarning(false);
-          handleInput();
-        }
-      }
-    }, 100);
-  };
-
-  const handlePaste = async (e) => {
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    
-    // On iOS, redirect focus to hidden textarea to capture full paste
-    if (isIOS && hiddenPasteRef.current) {
-      e.preventDefault();
-      hiddenPasteRef.current.value = '';
-      hiddenPasteRef.current.focus();
-      // iOS will now paste into hidden textarea, handleHiddenPaste will copy it
-      return;
+    // Debug logging for iOS
+    if (isIOS) {
+      console.log('[iOS Input] Length:', text.length, 'Lines:', text.split('\n').length);
     }
+  };
 
-    // Non-iOS: try manual insert
+  const handlePaste = (e) => {
+    e.preventDefault();
+
+    // Get clipboard data
     let pastedText = '';
     if (e.clipboardData && e.clipboardData.getData) {
       pastedText = e.clipboardData.getData('text/plain');
     }
-    if (!pastedText && navigator.clipboard && navigator.clipboard.readText) {
+
+    // Debug logging for iOS
+    if (isIOS) {
+      console.log('🔍 [iOS PASTE DEBUG]');
+      console.log('User Agent:', navigator.userAgent);
+      console.log('Clipboard types:', e.clipboardData?.types);
+      console.log('Pasted text length:', pastedText.length);
+      console.log('Pasted text lines:', pastedText.split('\n').length);
+      console.log('Has newlines:', pastedText.includes('\n'));
+      console.log('First 200 chars:', pastedText.substring(0, 200));
+    }
+
+    if (!pastedText) {
+      console.warn('[Paste] No text data in clipboard');
+      return;
+    }
+
+    // Insert text at cursor position
+    const selection = window.getSelection();
+    if (!selection || !selection.rangeCount) {
+      // No selection, append to end
+      if (editableRef.current) {
+        const currentText = editableRef.current.innerText;
+        editableRef.current.innerText = currentText + (currentText ? '\n' : '') + pastedText;
+      }
+    } else {
+      // Insert at cursor using execCommand (works better on iOS)
       try {
-        pastedText = await navigator.clipboard.readText();
-      } catch (err) {
-        // ignore
+        document.execCommand('insertText', false, pastedText);
+      } catch {
+        // Fallback: manual insertion
+        const range = selection.getRangeAt(0);
+        range.deleteContents();
+        const textNode = document.createTextNode(pastedText);
+        range.insertNode(textNode);
+
+        // Move cursor to end of inserted text
+        range.setStartAfter(textNode);
+        range.setEndAfter(textNode);
+        selection.removeAllRanges();
+        selection.addRange(range);
       }
     }
-    if (!pastedText) {
-      return; // allow native paste
-    }
-    e.preventDefault();
-    const ta = textareaRef.current;
-    if (!ta) return;
-    const start = ta.selectionStart;
-    const end = ta.selectionEnd;
-    const currentValue = ta.value;
-    const newValue = currentValue.substring(0, start) + pastedText + currentValue.substring(end);
-    ta.value = newValue;
-    const newCursorPos = start + pastedText.length;
-    ta.selectionStart = newCursorPos;
-    ta.selectionEnd = newCursorPos;
+
     setPasteWarning(false);
     handleInput();
+
+    // Check for potential truncation on iOS
+    if (isIOS) {
+      setTimeout(() => {
+        const finalText = editableRef.current?.innerText || '';
+        const expectedMinLength = pastedText.length * 0.8; // Allow 20% variance
+
+        if (finalText.length < expectedMinLength) {
+          console.warn('[iOS Paste] Possible truncation detected!');
+          console.log('Expected length:', pastedText.length);
+          console.log('Actual length:', finalText.length);
+          setPasteWarning(true);
+        }
+      }, 300);
+    }
   };
 
   const handlePasteButton = async () => {
     try {
       const text = await navigator.clipboard.readText();
-      if (textareaRef.current) {
-        textareaRef.current.value = text;
+      if (editableRef.current) {
+        editableRef.current.innerText = text;
         setPasteWarning(false);
         handleInput();
       }
     } catch (err) {
-      alert('No se pudo pegar. Probá el gesto de pegar manual.');
+      console.error('[Paste Button] Error:', err);
+      alert('No se pudo pegar. En iOS, probá el gesto de pegar manual (mantener presionado y seleccionar Pegar).');
+    }
+  };
+
+  const handlePasteMore = () => {
+    // Focus the editable div and show instruction
+    if (editableRef.current) {
+      editableRef.current.focus();
+      // Move cursor to end
+      const range = document.createRange();
+      const selection = window.getSelection();
+      range.selectNodeContents(editableRef.current);
+      range.collapse(false);
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+    }
+    alert('Pegá el resto del contenido ahora. Se agregará al final del texto actual.');
+  };
+
+  const handleClearClick = () => {
+    if (editableRef.current) {
+      editableRef.current.innerText = '';
+    }
+    setHasContent(false);
+    setShowPlaceholder(true);
+    setPasteWarning(false);
+    onClear();
+  };
+
+  // Handle focus/blur for placeholder
+  const handleFocus = () => {
+    if (!hasContent) {
+      setShowPlaceholder(false);
+    }
+  };
+
+  const handleBlur = () => {
+    if (!hasContent) {
+      setShowPlaceholder(true);
     }
   };
 
@@ -101,40 +162,37 @@ export default function InputArea({ onTranslate, onClear, isLoading, hasApiKey }
         Mensajes de Telegram
       </h2>
 
-      {/* Hidden textarea for iOS paste workaround */}
-      <textarea
-        ref={hiddenPasteRef}
-        onPaste={handleHiddenPaste}
-        onBlur={() => {
-          // Return focus to main textarea after paste completes
-          if (textareaRef.current) {
-            textareaRef.current.focus();
-          }
-        }}
-        style={{
-          position: 'absolute',
-          left: '-9999px',
-          width: '1px',
-          height: '1px',
-          opacity: 0,
-        }}
-        tabIndex={-1}
-        aria-hidden="true"
-      />
-
-      <textarea
-        ref={textareaRef}
-        onInput={handleInput}
-        onPaste={handlePaste}
-        placeholder={`Pegá todos los mensajes de Telegram aquí...
+      {/* ContentEditable div with iOS-specific CSS */}
+      <div className="relative">
+        {showPlaceholder && (
+          <div className="absolute inset-0 p-3 sm:p-4 pointer-events-none font-mono text-sm text-gray-400 whitespace-pre-wrap">
+{`Pegá todos los mensajes de Telegram aquí...
 
 Ejemplo:
 教授: Análisis del mercado...
 30(女): Tengo una pregunta...
 32: Gracias por la info...`}
-        className="w-full min-h-[220px] sm:min-h-[300px] p-3 sm:p-4 border border-gray-300 rounded-xl hover:border-gray-400 focus-ring font-mono text-sm resize-y placeholder:text-gray-400"
-        disabled={isLoading}
-      />
+          </div>
+        )}
+        <div
+          ref={editableRef}
+          contentEditable={!isLoading}
+          onInput={handleInput}
+          onPaste={handlePaste}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          className="w-full min-h-[220px] sm:min-h-[300px] p-3 sm:p-4 border border-gray-300 rounded-xl hover:border-gray-400 focus-ring font-mono text-sm resize-y overflow-y-auto whitespace-pre-wrap break-words"
+          style={{
+            WebkitUserSelect: 'text',
+            userSelect: 'text',
+            WebkitUserModify: 'read-write-plaintext-only',
+            overflowWrap: 'break-word',
+          }}
+          aria-label="Área de texto para pegar mensajes de Telegram"
+          role="textbox"
+          aria-multiline="true"
+        />
+      </div>
 
       <div className="flex flex-col sm:flex-row gap-3 mt-3 sm:mt-4">
         <button
@@ -146,6 +204,17 @@ Ejemplo:
           <span>Pegar</span>
         </button>
 
+        {pasteWarning && (
+          <button
+            onClick={handlePasteMore}
+            disabled={isLoading}
+            className="flex items-center justify-center gap-2 bg-orange-50 border border-orange-300 hover:bg-orange-100 text-orange-700 font-semibold py-2 px-6 rounded-xl transition-colors transition-transform duration-200 active:scale-95 focus-ring"
+          >
+            <span>➕</span>
+            <span>Pegar más</span>
+          </button>
+        )}
+
         <button
           onClick={handleTranslateClick}
           disabled={!hasApiKey || !hasContent || isLoading}
@@ -156,13 +225,7 @@ Ejemplo:
         </button>
 
         <button
-          onClick={() => {
-            if (textareaRef.current) {
-              textareaRef.current.value = '';
-            }
-            setHasContent(false);
-            onClear();
-          }}
+          onClick={handleClearClick}
           disabled={isLoading}
           className="flex items-center justify-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold py-2 px-6 rounded-xl transition-colors transition-transform duration-200 active:scale-95 focus-ring"
         >
@@ -172,8 +235,8 @@ Ejemplo:
       </div>
 
       {pasteWarning && (
-        <div className="text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-xl p-3 mt-2">
-          ⚠️ Parece que no se pegó todo el contenido. Intentá de nuevo o usá el botón "Pegar".
+        <div className="text-orange-700 bg-orange-50 border border-orange-200 rounded-xl p-3 mt-2">
+          ⚠️ Parece que no se pegó todo el contenido. Usá el botón "Pegar más" para agregar el resto, o pegá de nuevo manteniendo presionado y seleccionando Pegar.
         </div>
       )}
 
