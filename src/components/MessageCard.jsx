@@ -50,8 +50,8 @@ export default function MessageCard({ message, onUpdate, onRetranslate, isRetran
   const handleCopy = async () => {
     setCopyStatus('copying');
 
-    // Copiar ORIGINAL (sin markdown) + TRADUCCIÓN FINAL (con triple backticks para Telegram)
-    const textToCopy = `${message.originalWithFormat}\n${'─'.repeat(5)}\n\`\`\`\n${message.translation}\n\`\`\``;
+    // Copiar ORIGINAL + TRADUCCIÓN FINAL (sin markdown, formato simple)
+    const textToCopy = `${message.originalWithFormat}\n${'─'.repeat(5)}\n${message.translation}`;
     const success = await copyToClipboard(textToCopy);
 
     if (success) {
