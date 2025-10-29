@@ -51,7 +51,7 @@ export default function MessageCard({ message, onUpdate, onRetranslate, isRetran
     setCopyStatus('copying');
 
     // Copiar ORIGINAL + TRADUCCIÓN FINAL (sin markdown, formato simple)
-    const textToCopy = `${message.originalWithFormat}\n${'─'.repeat(5)}\n${message.translation}`;
+    const textToCopy = `${message.originalWithFormat}\n${message.translation}`;
     const success = await copyToClipboard(textToCopy);
 
     if (success) {
