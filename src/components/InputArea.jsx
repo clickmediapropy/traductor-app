@@ -259,34 +259,44 @@ export default function InputArea({ onTranslate, onClear, isLoading, hasApiKey }
   };
 
   return (
-    <div className="bg-white/70 backdrop-blur-md neon-border shadow-neonSoft rounded-2xl p-6 transition-shadow duration-200">
-      <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
+    <div className="bg-white/80 backdrop-blur-md neon-border shadow-neonSoft rounded-2xl p-4 sm:p-6 transition-shadow duration-200">
+      <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">
         Mensajes de Telegram
       </h2>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-4 border-b border-gray-200">
+      <div className="flex gap-1 sm:gap-2 mb-4 border-b-2 border-gray-200">
         <button
           onClick={() => setActiveTab('paste')}
-          className={`px-4 py-2 font-medium transition-colors ${
+          className={`min-h-[44px] px-4 sm:px-5 py-2.5 font-semibold text-sm sm:text-base transition-all ${
             activeTab === 'paste'
-              ? 'text-purple-600 border-b-2 border-purple-600'
+              ? 'text-purple-600 border-b-2 border-purple-600 -mb-[2px]'
               : 'text-gray-500 hover:text-gray-700'
           }`}
+          aria-selected={activeTab === 'paste'}
+          role="tab"
         >
-          📋 Pegar Texto
+          <span className="inline-flex items-center gap-2">
+            <span className="text-lg">📋</span>
+            <span className="hidden xs:inline">Pegar Texto</span>
+          </span>
         </button>
         <button
           onClick={() => setActiveTab('bot')}
-          className={`px-4 py-2 font-medium transition-colors relative ${
+          className={`min-h-[44px] px-4 sm:px-5 py-2.5 font-semibold text-sm sm:text-base transition-all relative ${
             activeTab === 'bot'
-              ? 'text-purple-600 border-b-2 border-purple-600'
+              ? 'text-purple-600 border-b-2 border-purple-600 -mb-[2px]'
               : 'text-gray-500 hover:text-gray-700'
           }`}
+          aria-selected={activeTab === 'bot'}
+          role="tab"
         >
-          🤖 Código de Bot
+          <span className="inline-flex items-center gap-2">
+            <span className="text-lg">🤖</span>
+            <span className="hidden xs:inline">Código Bot</span>
+          </span>
           {isIOS && (
-            <span className="ml-1 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+            <span className="ml-1 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">
               iOS
             </span>
           )}
@@ -299,7 +309,7 @@ export default function InputArea({ onTranslate, onClear, isLoading, hasApiKey }
           {/* ContentEditable div with iOS-specific CSS */}
           <div className="relative">
         {showPlaceholder && (
-          <div className="absolute inset-0 p-3 sm:p-4 pointer-events-none font-mono text-sm text-gray-400 whitespace-pre-wrap">
+          <div className="absolute inset-0 p-4 pointer-events-none font-mono text-sm sm:text-base text-gray-400 whitespace-pre-wrap">
 {`Pegá todos los mensajes de Telegram aquí...
 
 Ejemplo:
@@ -315,7 +325,7 @@ Ejemplo:
           onPaste={handlePaste}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          className="w-full min-h-[220px] sm:min-h-[300px] p-3 sm:p-4 border border-gray-300 rounded-xl hover:border-gray-400 focus-ring font-mono text-sm resize-y overflow-y-auto whitespace-pre-wrap break-words"
+          className="w-full min-h-[240px] sm:min-h-[320px] p-4 border-2 border-gray-300 rounded-xl hover:border-gray-400 focus:border-purple-500 focus-ring font-mono text-sm sm:text-base resize-y overflow-y-auto whitespace-pre-wrap break-words shadow-sm"
           style={{
             WebkitUserSelect: 'text',
             userSelect: 'text',
@@ -328,66 +338,68 @@ Ejemplo:
         />
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3 mt-3 sm:mt-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mt-4">
         <button
           onClick={handlePasteButton}
           disabled={isLoading}
-          className="flex items-center justify-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold py-2 px-6 rounded-xl transition-colors transition-transform duration-200 active:scale-95 focus-ring"
+          className="min-h-[48px] flex items-center justify-center gap-2 bg-white border-2 border-gray-300 hover:bg-gray-50 active:bg-gray-100 text-gray-700 font-semibold text-sm sm:text-base px-4 py-3 rounded-xl transition-all duration-200 active:scale-[0.98] focus-ring shadow-sm"
         >
-          <span>📋</span>
+          <span className="text-lg">📋</span>
           <span>Pegar</span>
+        </button>
+
+        <button
+          onClick={handleTranslateClick}
+          disabled={!hasApiKey || !hasContent || isLoading}
+          className="min-h-[48px] col-span-2 flex items-center justify-center gap-2 btn-gradient text-white font-bold text-sm sm:text-base px-6 py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed focus-ring"
+        >
+          <span className="text-lg">{isLoading ? '⏳' : '🚀'}</span>
+          <span>{isLoading ? 'Traduciendo...' : 'Traducir'}</span>
+        </button>
+
+        <button
+          onClick={handleClearClick}
+          disabled={isLoading}
+          className="min-h-[48px] flex items-center justify-center gap-2 bg-white border-2 border-gray-300 hover:bg-gray-50 active:bg-gray-100 text-gray-700 font-semibold text-sm sm:text-base px-4 py-3 rounded-xl transition-all duration-200 active:scale-[0.98] focus-ring shadow-sm"
+        >
+          <span className="text-lg">🗑️</span>
+          <span>Limpiar</span>
         </button>
 
         {pasteWarning && (
           <button
             onClick={handlePasteMore}
             disabled={isLoading}
-            className="flex items-center justify-center gap-2 bg-orange-50 border border-orange-300 hover:bg-orange-100 text-orange-700 font-semibold py-2 px-6 rounded-xl transition-colors transition-transform duration-200 active:scale-95 focus-ring"
+            className="min-h-[48px] col-span-2 sm:col-span-4 flex items-center justify-center gap-2 bg-orange-50 border-2 border-orange-300 hover:bg-orange-100 active:bg-orange-200 text-orange-700 font-semibold text-sm sm:text-base px-6 py-3 rounded-xl transition-all duration-200 active:scale-[0.98] focus-ring shadow-sm"
           >
-            <span>➕</span>
-            <span>Pegar más</span>
+            <span className="text-lg">➕</span>
+            <span>Pegar Más</span>
           </button>
         )}
-
-        <button
-          onClick={handleTranslateClick}
-          disabled={!hasApiKey || !hasContent || isLoading}
-          className="flex items-center gap-2 btn-gradient text-white font-semibold py-2 px-6 rounded-xl shadow-sm transition-colors transition-transform duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed focus-ring"
-        >
-          <span>{isLoading ? '⏳' : '🚀'}</span>
-          <span>{isLoading ? 'Traduciendo...' : 'Traducir Todo'}</span>
-        </button>
-
-        <button
-          onClick={handleClearClick}
-          disabled={isLoading}
-          className="flex items-center justify-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold py-2 px-6 rounded-xl transition-colors transition-transform duration-200 active:scale-95 focus-ring"
-        >
-          <span>🗑️</span>
-          <span>Limpiar</span>
-        </button>
 
         {/* Debug button - shows paste logs */}
         {isIOS && debugLogs.length > 0 && (
           <button
             onClick={() => setShowDebugPanel(!showDebugPanel)}
-            className="flex items-center justify-center gap-2 bg-purple-50 border border-purple-300 hover:bg-purple-100 text-purple-700 font-semibold py-2 px-6 rounded-xl transition-colors transition-transform duration-200 active:scale-95 focus-ring"
+            className="min-h-[48px] col-span-2 sm:col-span-4 flex items-center justify-center gap-2 bg-purple-50 border-2 border-purple-300 hover:bg-purple-100 active:bg-purple-200 text-purple-700 font-semibold text-sm sm:text-base px-6 py-3 rounded-xl transition-all duration-200 active:scale-[0.98] focus-ring shadow-sm"
           >
-            <span>🐛</span>
+            <span className="text-lg">🐛</span>
             <span>Debug</span>
           </button>
         )}
       </div>
 
       {pasteWarning && (
-        <div className="text-orange-700 bg-orange-50 border border-orange-200 rounded-xl p-3 mt-2">
-          ⚠️ Parece que no se pegó todo el contenido. Usá el botón "Pegar más" para agregar el resto, o pegá de nuevo manteniendo presionado y seleccionando Pegar.
+        <div className="text-orange-800 bg-orange-50 border-2 border-orange-300 rounded-xl p-4 mt-4 shadow-sm text-sm sm:text-base font-medium">
+          <span className="text-lg mr-2">⚠️</span>
+          Parece que no se pegó todo el contenido. Usá el botón "Pegar Más" para agregar el resto.
         </div>
       )}
 
       {!hasApiKey && (
-        <p className="text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-xl p-3 mt-4">
-          ⚠️ Configurá tu API key de Anthropic para comenzar a traducir
+        <p className="text-yellow-800 bg-yellow-50 border-2 border-yellow-300 rounded-xl p-4 mt-4 shadow-sm text-sm sm:text-base font-semibold">
+          <span className="text-lg mr-2">⚠️</span>
+          Configurá tu API key de Anthropic para comenzar a traducir
         </p>
       )}
         </>

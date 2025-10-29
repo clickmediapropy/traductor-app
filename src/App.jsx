@@ -174,39 +174,47 @@ function App() {
         {messages.length > 0 && (
           <section className="animate-fade-in">
             {/* Header con toggle de vista */}
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-800">
-                Resultados ({messages.length} mensajes)
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-5 sm:mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
+                Resultados ({messages.length})
               </h2>
 
               {/* Toggle buttons */}
-              <div className="flex gap-2 bg-white rounded-xl p-1 border border-gray-200">
+              <div className="flex gap-1 bg-white/80 backdrop-blur-sm rounded-xl p-1.5 border-2 border-gray-200 shadow-sm">
                 <button
                   onClick={() => setViewMode('cards')}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
+                  className={`min-h-[44px] px-4 sm:px-5 py-2.5 text-sm sm:text-base font-semibold rounded-lg transition-all duration-200 active:scale-95 ${
                     viewMode === 'cards'
-                      ? 'bg-purple-600 text-white shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'bg-purple-600 text-white shadow-md'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
+                  aria-pressed={viewMode === 'cards'}
                 >
-                  🃏 Tarjetas
+                  <span className="inline-flex items-center gap-2">
+                    <span className="text-lg">🃏</span>
+                    <span>Tarjetas</span>
+                  </span>
                 </button>
                 <button
                   onClick={() => setViewMode('consolidated')}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
+                  className={`min-h-[44px] px-4 sm:px-5 py-2.5 text-sm sm:text-base font-semibold rounded-lg transition-all duration-200 active:scale-95 ${
                     viewMode === 'consolidated'
-                      ? 'bg-purple-600 text-white shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'bg-purple-600 text-white shadow-md'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
+                  aria-pressed={viewMode === 'consolidated'}
                 >
-                  📄 Todo Junto
+                  <span className="inline-flex items-center gap-2">
+                    <span className="text-lg">📄</span>
+                    <span>Todo Junto</span>
+                  </span>
                 </button>
               </div>
             </div>
 
             {/* Render condicional según viewMode */}
             {viewMode === 'cards' ? (
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-4 sm:gap-5">
                 {messages.map(message => (
                   <MessageCard
                     key={message.id}
