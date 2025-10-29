@@ -15,11 +15,10 @@ export default function ConsolidatedOutput({ messages }) {
    */
   const generateConsolidatedText = () => {
     return messages.map((msg, index) => {
-      const separator = '─────';
       const messageSeparator = '🔹 🔹 🔹';
 
-      // Construir el bloque de mensaje: original (sin markdown) + separador + traducción (con triple backticks)
-      let block = `${msg.originalWithFormat}\n${separator}\n\`\`\`\n${msg.translation}\n\`\`\``;
+      // Construir el bloque de mensaje: original (sin markdown) + traducción (con triple backticks)
+      let block = `${msg.originalWithFormat}\n\`\`\`\n${msg.translation}\n\`\`\``;
 
       // Agregar separador entre mensajes (excepto después del último)
       if (index < messages.length - 1) {
